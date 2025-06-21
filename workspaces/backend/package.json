@@ -16,6 +16,16 @@
     "body-parser": "^2.2.0",
     "dotenv": "^16.5.0",
     "express": "^5.1.0",
-    "mongoose": "^8.16.0"
+    "mongoose": "^8.16.0",
+    "expo": "^50.0.0",
+    "react-native": "^0.73.6",
+    "@vapi-ai/react-native": "^0.1.7",
+    "@config-plugins/react-native-webrtc": "8.0.0",
+    "@daily-co/config-plugin-rn-daily-js": "0.0.4",
+    "@daily-co/react-native-daily-js": "0.59.0",
+    "@daily-co/react-native-webrtc": "118.0.3-daily.1",
+    "@react-native-async-storage/async-storage": "^1.22.3",
+    "react-native-background-timer": "^2.4.1",
+    "react-native-get-random-values": "^1.11.0"
   }
 }
