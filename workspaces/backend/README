@@ -1,0 +1,9 @@
+# for setup
+make sure you have node installed
+
+node -v
+
+npm -v
+
+# setting up the workspace
+npm install
