@@ -1,12 +1,10 @@
 from uagents import Agent, Context
+import logging
 
-alice = Agent(name="alice", seed="alice recovery phrase")
+logging.basicConfig(level=logging.INFO)
+class MyAgent(Agent):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
 
-@alice.on_interval(period=5.0)
-async def say_hello(ctx: Context):
-    ctx.logger.info(f'hello, my name is {ctx.agent.name}')
-
-if __name__ == "__main__":
-    alice.run()
-
-
+    def setup(self, context: Context):
+        
