@@ -1,0 +1,27 @@
+const { createAgent } = require("./vapi");
+require("dotenv").config();
+
+createAgent({
+  name: "Voice Guardian",
+  voice: "nova",
+  model: "gpt-4o",
+  firstMessage: "Hi, I’m your voice guardian. What’s going on?",
+  transcriptionWebhookUrl: process.env.VAPI_WEBHOOK,
+  instructions: `You are a calm assistant who helps people feel safe.
+
+Respond compassionately and format a report like this:
+
+Name:
+Age:
+Location:
+Date:
+Time:
+Notes:
+
+Transcript:`,
+  endCallOnGoodbye: false,
+})
+  .then((res) => console.log("✅ Agent Created:", res.data))
+  .catch((err) =>
+    console.error("❌ Error:", err.response?.data || err.message)
+  );
