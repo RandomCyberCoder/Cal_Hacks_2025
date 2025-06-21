@@ -1,0 +1,1 @@
+from fetchai.agent import Agent
