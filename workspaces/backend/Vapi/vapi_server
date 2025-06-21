@@ -1,8 +1,6 @@
 const express = require("express");
 const bodyParser = require("body-parser");
-const { sendTalk } = require("./vapi");
-require("dotenv").config();
-
+import sendTalk from "@vapi-ai/server-sdk"; 
 const app = express();
 const PORT = 5000;
 
