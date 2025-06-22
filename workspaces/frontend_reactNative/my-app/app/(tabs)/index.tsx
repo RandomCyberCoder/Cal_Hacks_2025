@@ -2,8 +2,7 @@ import { View, StyleSheet, TouchableOpacity, Text, Alert } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { useAuth } from '@/contexts/AuthContext';
-import { Ionicons, MaterialIcons } from '@expo/vector-icons';
-
+import { Ionicons } from '@expo/vector-icons';
 
 export default function HomeScreen() {
   const { user, logout } = useAuth();
@@ -31,13 +30,13 @@ export default function HomeScreen() {
           </ThemedText>
         </View>
         <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-          <Ionicons name="log-out-outline" size={24} color="#FF3B30" />
+          <Ionicons name="log-out-outline" size={24} color="#8b6f47" />
         </TouchableOpacity>
       </View>
 
       <View style={styles.content}>
         <View style={styles.card}>
-          <Ionicons name="person-circle-outline" size={48} color="#007AFF" style={styles.cardIcon} />
+          <Ionicons name="person-circle-outline" size={48} color="#8b6f47" style={styles.cardIcon} />
           <ThemedText type="subtitle" style={styles.cardTitle}>
             Your Profile
           </ThemedText>
@@ -50,7 +49,7 @@ export default function HomeScreen() {
         </View>
 
         <View style={styles.card}>
-          <Ionicons name="calendar-outline" size={48} color="#34C759" style={styles.cardIcon} />
+          <Ionicons name="calendar-outline" size={48} color="#a0845c" style={styles.cardIcon} />
           <ThemedText type="subtitle" style={styles.cardTitle}>
             Events
           </ThemedText>
@@ -60,7 +59,7 @@ export default function HomeScreen() {
         </View>
 
         <View style={styles.card}>
-          <Ionicons name="location-outline" size={48} color="#FF9500" style={styles.cardIcon} />
+          <Ionicons name="location-outline" size={48} color="#b8956d" style={styles.cardIcon} />
           <ThemedText type="subtitle" style={styles.cardTitle}>
             Zones
           </ThemedText>
@@ -84,6 +83,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
+    backgroundColor: '#f5f5dc',
   },
   header: {
     flexDirection: 'row',
@@ -96,10 +96,11 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontWeight: 'bold',
     marginBottom: 4,
+    color: '#8b6f47',
   },
   subtitle: {
     fontSize: 16,
-    color: '#666',
+    color: '#a0845c',
   },
   logoutButton: {
     padding: 8,
@@ -108,19 +109,21 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   card: {
-    backgroundColor: '#f8f9fa',
+    backgroundColor: 'white',
     borderRadius: 16,
     padding: 20,
     marginBottom: 16,
     alignItems: 'center',
-    shadowColor: '#000',
+    shadowColor: '#8b6f47',
     shadowOffset: {
       width: 0,
       height: 2,
     },
     shadowOpacity: 0.1,
-    shadowRadius: 3.84,
-    elevation: 5,
+    shadowRadius: 4,
+    elevation: 3,
+    borderWidth: 1,
+    borderColor: '#e6dcc6',
   },
   cardIcon: {
     marginBottom: 12,
@@ -130,30 +133,33 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginBottom: 8,
     textAlign: 'center',
+    color: '#8b6f47',
   },
   cardDescription: {
     fontSize: 14,
-    color: '#666',
+    color: '#a0845c',
     textAlign: 'center',
     lineHeight: 20,
   },
   statusCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#e8f5e8',
+    backgroundColor: '#f9f7f1',
     borderRadius: 12,
     padding: 16,
     marginTop: 20,
+    borderWidth: 1,
+    borderColor: '#e6dcc6',
   },
   statusDot: {
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: '#34C759',
+    backgroundColor: '#8b6f47',
     marginRight: 12,
   },
   statusText: {
-    color: '#2d5a2d',
+    color: '#8b6f47',
     fontSize: 14,
     fontWeight: '500',
   },

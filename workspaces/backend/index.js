@@ -4,34 +4,47 @@ import dotenv from "dotenv";
 import { VapiClient } from "@vapi-ai/server-sdk";
 import User from "./models/user.js";
 import { authRouter, authenticateToken } from './routes/auth.js';
+import { contactsRouter } from './routes/contacts.js';
+
 
 dotenv.config();
 
 const app = express();
-const port = process.env.PORT || 3000;
 
-// Initialize Vapi client - use environment variable or fallback
-const token =
-  process.env.VAPI_API_KEY || "1746f9c6-f86c-4152-ba5c-f11ee0016d6d";
+const port = 3000;
 
-console.log("Vapi API Key loaded:", token ? "✓" : "✗");
+// Initialize Vapi client
 
-const assistantId =
-  process.env.VAPI_ASSISTANT_ID || "6f62f7f1-7df6-4d57-bc30-4fafbf97506c";
-const phoneNumberId =
-  process.env.VAPI_PHONE_NUMBER_ID || "450135d5-e4e1-4018-9b37-595e5e91dbc0";
+const token = "68ee9b0d-2345-46b7-81a9-012e9d52c73c";
 
-console.log("Assistant ID:", assistantId);
-console.log("Phone Number ID:", phoneNumberId);
+console.log("public key", process.env.VAPI_API_KEY);
 
+const assistantId = "58790545-e1a7-4e3d-94bc-b39baafd12fe";
+const phoneNumberId = "d9b090b1-c9ff-4274-bc69-22b4935341ec";
+
+console.log("phoneNumberId", phoneNumberId);
 // Middleware
 app.use(express.json());
+
+// CORS configuration for React Native app
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+  
+  if (req.method === 'OPTIONS') {
+    res.sendStatus(200);
+  } else {
+    next();
+  }
+});
 
 mongoose.connect(process.env.MONGODB_URL)
 .then(() => console.log('Connected to MongoDB'))
 .catch(err => console.error('MongoDB connection error:', err));
 
 app.use('/auth', authRouter);
+app.use('/contacts', contactsRouter);
 
 app.get('/protected', authenticateToken, (req, res) => {
   res.json({ 
@@ -50,19 +63,6 @@ app.post("/make-call", async (req, res) => {
   try {
     const { phoneNumber } = req.body;
 
-    // Validate phone number format (E.164)
-    const targetNumber = phoneNumber || "+19167087169"; // Default test number
-
-    // Basic validation for E.164 format
-    if (!targetNumber.startsWith("+") || targetNumber.length < 10) {
-      return res.status(400).json({
-        success: false,
-        error: "Phone number must be in E.164 format (e.g., +1234567890)",
-      });
-    }
-
-    console.log("Making call to:", targetNumber);
-
     const vapi = new VapiClient({
       token,
     });
@@ -71,7 +71,7 @@ app.post("/make-call", async (req, res) => {
       assistantId,
       phoneNumberId,
       customer: {
-        number: targetNumber,
+        number: "+18082061692",
       },
     });
 
@@ -90,30 +90,6 @@ app.post("/make-call", async (req, res) => {
   }
 });
 
-// Webhook endpoint for Guardian Alert
-app.post("/webhook", (req, res) => {
-  try {
-    console.log("Guardian Alert webhook received:", req.body);
-
-    // Log the alert data
-    const alertData = req.body;
-    console.log("Alert Type:", alertData.type);
-    console.log("Alert Data:", JSON.stringify(alertData, null, 2));
-
-    // Respond to acknowledge receipt
-    res.status(200).json({
-      success: true,
-      message: "Webhook received successfully",
-    });
-  } catch (error) {
-    console.error("Error processing webhook:", error);
-    res.status(500).json({
-      success: false,
-      error: error.message,
-    });
-  }
-});
-
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);
@@ -123,7 +99,8 @@ app.use((err, req, res, next) => {
   });
 });
 
-app.listen(port, () => {
+app.listen(port, '0.0.0.0', () => {
   console.log(`🚀 Vapi Backend Server is running on http://localhost:${port}`);
+  console.log(`🚀 Also accessible at http://10.40.54.244:${port}`);
   console.log(`📞 Make calls via POST to http://localhost:${port}/make-call`);
 });

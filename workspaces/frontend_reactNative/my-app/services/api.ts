@@ -48,4 +48,26 @@ export const authAPI = {
   },
 };
 
+export const contactsAPI = {
+  getContacts: async () => {
+    const response = await api.get('/contacts');
+    return response.data;
+  },
+  
+  addContact: async (contact: { name: string; phoneNumber: string; email?: string; avatar?: string }) => {
+    const response = await api.post('/contacts', contact);
+    return response.data;
+  },
+  
+  updateContact: async (contactId: string, contact: { name: string; phoneNumber: string; email?: string; avatar?: string }) => {
+    const response = await api.put(`/contacts/${contactId}`, contact);
+    return response.data;
+  },
+  
+  deleteContact: async (contactId: string) => {
+    const response = await api.delete(`/contacts/${contactId}`);
+    return response.data;
+  },
+};
+
 export default api; 
