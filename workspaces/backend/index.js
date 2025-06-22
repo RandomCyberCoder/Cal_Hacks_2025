@@ -46,20 +46,8 @@ app.post("/make-call", async (req, res) => {
       },
     });
 
-    fetch();
-
-    const response = await fetch("https://api.vapi.ai/", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        // phoneNumber: "+15127689863", // Replace with you
-        // r test phone number
-        // assistantId: "58790545-e1a7-4e3d-94bc-b39baafd12fe",
-      }),
-    });
-
+    
+    console.log("Call response:", call);
     res.json({
       success: true,
       callId: call.id,
