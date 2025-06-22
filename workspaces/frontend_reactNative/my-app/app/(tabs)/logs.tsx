@@ -16,7 +16,7 @@ export default function TabTwoScreen() {
         <IconSymbol
           size={310}
           color="#808080"
-          name="chevron.left.forwardslash.chevron.right"
+          name="description"
           style={styles.headerImage}
         />
       }>
@@ -98,7 +98,7 @@ export default function TabTwoScreen() {
 
 const styles = StyleSheet.create({
   headerImage: {
-    color: '#000000',
+    color: '#A2A2A2',
     bottom: -90,
     left: -35,
     position: 'absolute',
