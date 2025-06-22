@@ -1,6 +1,14 @@
-# Welcome to your Expo app 👋
+# Safety Companion App 👋
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+This is a React Native safety companion app built with [Expo](https://expo.dev) that integrates with VAPI assistants for different types of calls.
+
+## Features
+
+- 🎧 **Call Assistant** - General help and assistance
+- 👥 **Call Contacts** - Reach your saved contacts with assistant help
+- 🚨 **911 Emergency** - Emergency services with location sharing
+- 📍 **Location Services** - Automatic location sharing with assistants
+- 📱 **Contact Management** - Save and manage emergency contacts
 
 ## Get started
 
@@ -10,11 +18,53 @@ This is an [Expo](https://expo.dev) project created with [`create-expo-app`](htt
    npm install
    ```
 
-2. Start the app
+2. Configure environment variables
+
+   Create a `.env` file with:
+   ```bash
+   # API Configuration
+   EXPO_PUBLIC_API_URL=http://your_backend_ip:3000
+
+   # Google Maps API for enhanced location services
+   # Get this from Google Cloud Console - Geocoding API
+   EXPO_PUBLIC_GOOGLE_MAPS_API_KEY=your_google_maps_api_key_here
+   ```
+
+3. Start the app
 
    ```bash
    npx expo start
    ```
+
+## VAPI Assistant Configuration
+
+The app uses different VAPI assistants for different scenarios:
+
+### 1. General Assistant (`VAPI_ASSISTANT_GENERAL_ID`)
+- Used for the main "Call Assistant" button
+- Should be configured for general help and assistance
+- Gets user location and context
+
+### 2. Contact Assistant (`VAPI_ASSISTANT_CONTACT_ID`) 
+- Used when calling saved contacts
+- Can be more personal/friendly in tone
+- Receives contact name and relationship context
+- Gets user location for assistance
+
+### 3. Emergency Assistant (`VAPI_ASSISTANT_EMERGENCY_ID`)
+- Used for 911 emergency calls
+- Should be focused on emergency response
+- Receives emergency context and user location
+- Should prioritize getting help quickly
+
+## Location Services
+
+- App automatically requests location permissions
+- Location is shared with assistants for better context
+- Fallback to coordinates if Google Maps API not configured
+- Location updates dynamically during app use
+
+## Running the app
 
 In the output, you'll find options to open the app in a
 
@@ -25,15 +75,9 @@ In the output, you'll find options to open the app in a
 
 You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
 
-## Get a fresh project
+## Backend Setup
 
-When you're ready, run:
-
-```bash
-npm run reset-project
-```
-
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+Make sure to configure the backend with the appropriate VAPI assistants. See the backend README for configuration details.
 
 ## Learn more
 

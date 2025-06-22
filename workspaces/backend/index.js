@@ -17,10 +17,16 @@ const token = process.env.VAPI_API_KEY || "1746f9c6-f86c-4152-ba5c-f11ee0016d6d"
 
 console.log("Vapi API Key loaded:", token ? "✓" : "✗");
 
-const assistantId = process.env.VAPI_ASSISTANT_ID || "6f62f7f1-7df6-4d57-bc30-4fafbf97506c";
+// Different assistant IDs for different call types
+const assistants = {
+  general: process.env.VAPI_ASSISTANT_GENERAL_ID || "6f62f7f1-7df6-4d57-bc30-4fafbf97506c",
+  contact: process.env.VAPI_ASSISTANT_CONTACT_ID || "e7075a78-807e-4081-994f-b22388bceb0e", // your contact assistant
+  emergency: process.env.VAPI_ASSISTANT_EMERGENCY_ID || "6f62f7f1-7df6-4d57-bc30-4fafbf97506c", // fallback to general
+};
+
 const phoneNumberId = process.env.VAPI_PHONE_NUMBER_ID || "450135d5-e4e1-4018-9b37-595e5e91dbc0";
 
-console.log("Assistant ID:", assistantId);
+console.log("Assistant IDs:", assistants);
 console.log("Phone Number ID:", phoneNumberId);
 // Middleware
 app.use(express.json());
@@ -61,38 +67,109 @@ app.get("/", (req, res) => {
 // In-memory storage for call tracking (in production, use Redis or database)
 const callUserMap = new Map();
 
-// Test endpoint to make a call
+// Test endpoint to make a call with assistant type and location
 app.post("/make-call", authenticateToken, async (req, res) => {
   try {
-    const { phoneNumber } = req.body;
+    const { phoneNumber, callType = 'general', location, contactName } = req.body;
     const userId = req.user.userId; // Get user ID from auth token
 
-    console.log("Making call to:", phoneNumber || "+18082061692", "for user:", userId);
+    // Fetch actual user data from database
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        error: "User not found"
+      });
+    }
+
+    // Select appropriate assistant based on call type
+    const assistantId = assistants[callType] || assistants.general;
+    
+    console.log("=== INCOMING CALL REQUEST ===");
+    console.log("Making call:", {
+      phoneNumber: phoneNumber || "+13052408589",
+      callType,
+      assistantId,
+      userName: user.userName,
+      location: location ? `${location.latitude}, ${location.longitude}` : 'Not provided',
+      contactName,
+      userId
+    });
+    console.log("Raw request body:", JSON.stringify(req.body, null, 2));
 
     const vapi = new VapiClient({
       token,
     });
 
-    const call = await vapi.calls.create({
+    // Prepare call data
+    const callData = {
       assistantId,
       phoneNumberId,
       customer: {
-        number: phoneNumber || "+18082061692",
+        number: phoneNumber || "+13052408589",
+        name: user.userName, // Pass user's actual name
       },
-    });
+    };
+
+    // Add metadata with user context, location and call context
+    callData.metadata = {
+      userName: user.userName,
+      userId: userId,
+      callType: callType
+    };
+    
+    if (location) {
+      callData.metadata.userLocation = {
+        latitude: location.latitude,
+        longitude: location.longitude,
+        address: location.address || 'Address not available'
+      };
+    }
+    
+    if (contactName) {
+      callData.metadata.contactName = contactName;
+    }
+    
+    if (callType === 'emergency') {
+      callData.metadata.emergencyContext = 'User initiated emergency call through mobile app';
+    }
+
+    // Add assistant overrides with context variables
+    callData.assistantOverrides = {
+      variableValues: {
+        user_name: user.userName,
+        user_location: location ? location.address || `${location.latitude}, ${location.longitude}` : 'Location not available',
+        call_type: callType,
+        contact_name: contactName || 'N/A'
+      }
+    };
+
+    console.log("=== VAPI CALL DATA ===");
+    console.log(JSON.stringify(callData, null, 2));
+
+    const call = await vapi.calls.create(callData);
 
     // Store the mapping of call ID to user ID
     callUserMap.set(call.id, userId);
     console.log("Call tracking stored:", call.id, "->", userId);
 
+    console.log("=== VAPI RESPONSE ===");
     console.log("Call response:", call);
+    
     res.json({
       success: true,
       callId: call.id,
+      assistantType: callType || 'general',
+      assistantId: assistantId,
+      userName: user.userName,
+      userLocation: location?.address || 'Location not shared',
       message: "Call initiated successfully",
     });
   } catch (error) {
+    console.error("=== CALL ERROR ===");
     console.error("Error making call:", error);
+    console.error("Error details:", error.response?.data || error.message);
+    
     res.status(500).json({
       success: false,
       error: error.response?.data || error.message,

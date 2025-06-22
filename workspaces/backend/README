@@ -8,5 +8,33 @@ npm -v
 # setting up the workspace
 npm install
 
+# Environment Configuration
+Create a .env file with the following variables:
+
+## Required VAPI Configuration
+VAPI_API_KEY=your_vapi_api_key_here
+VAPI_PHONE_NUMBER_ID=your_phone_number_id_here
+
+## Different Assistant IDs for Different Call Types
+# General Assistant - For regular help and assistance
+VAPI_ASSISTANT_GENERAL_ID=your_general_assistant_id_here
+
+# Contact Assistant - For calls to saved contacts (can be more personal/friendly)  
+VAPI_ASSISTANT_CONTACT_ID=your_contact_assistant_id_here
+
+# Emergency Assistant - For 911 calls (should be focused on emergency response)
+VAPI_ASSISTANT_EMERGENCY_ID=your_emergency_assistant_id_here
+
+## Database
+MONGODB_URL=your_mongodb_connection_string
+
+## Optional: Google Maps API for better location services
+GOOGLE_MAPS_API_KEY=your_google_maps_api_key
+
 # start server
 node index.js
+
+# Features
+- Different assistants for different call types (general, contact, emergency)
+- Location data automatically passed to assistants
+- Call metadata includes user context and location

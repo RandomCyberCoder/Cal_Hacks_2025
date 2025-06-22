@@ -71,8 +71,28 @@ export const contactsAPI = {
 };
 
 export const vapiAPI = {
-  makeCall: async (phoneNumber?: string) => {
-    const response = await api.post('/make-call', { phoneNumber });
+  makeCall: async (
+    phoneNumber?: string, 
+    callType: 'general' | 'contact' | 'emergency' = 'general',
+    location?: { latitude: number; longitude: number; address?: string },
+    contactName?: string
+  ) => {
+    const requestData: any = {};
+    
+    if (phoneNumber) requestData.phoneNumber = phoneNumber;
+    if (callType) requestData.callType = callType;
+    if (location) requestData.location = location;
+    if (contactName) requestData.contactName = contactName;
+    
+    console.log('=== FRONTEND API CALL ===');
+    console.log('Parameters received:', { phoneNumber, callType, location, contactName });
+    console.log('Request data being sent:', requestData);
+    
+    const response = await api.post('/make-call', requestData);
+    
+    console.log('=== FRONTEND API RESPONSE ===');
+    console.log('Response received:', response.data);
+    
     return response.data;
   },
 };
