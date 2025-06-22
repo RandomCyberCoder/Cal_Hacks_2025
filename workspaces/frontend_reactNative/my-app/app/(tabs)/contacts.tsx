@@ -1,40 +1,27 @@
-import { View, StyleSheet, TouchableOpacity, Text, Alert } from 'react-native';
+import { Image } from 'expo-image';
+import { View, Platform, StyleSheet } from 'react-native';
+
+import { Collapsible } from '@/components/Collapsible';
+import { ExternalLink } from '@/components/ExternalLink';
+import ParallaxScrollView from '@/components/ParallaxScrollView';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
-import { useAuth } from '@/contexts/AuthContext';
+import { IconSymbol } from '@/components/ui/IconSymbol';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 
-
-export default function HomeScreen() {
-  const { user, logout } = useAuth();
-
-  const handleLogout = () => {
-    Alert.alert(
-      'Logout',
-      'Are you sure you want to logout?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { text: 'Logout', style: 'destructive', onPress: logout },
-      ]
-    );
-  };
-
+export default function TabTwoScreen() {
+  
   return (
-    <ThemedView style={styles.container}>
-      <View style={styles.header}>
-        <View>
-          <ThemedText type="title" style={styles.title}>
-            Welcome back!
-          </ThemedText>
-          <ThemedText type="default" style={styles.subtitle}>
-            Hello, {user?.userName}
-          </ThemedText>
-        </View>
-        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-          <Ionicons name="log-out-outline" size={24} color="#FF3B30" />
-        </TouchableOpacity>
-      </View>
-
+    <ParallaxScrollView
+      headerBackgroundColor={{ light: '#D0D0D0', dark: '#353636' }}
+      headerImage={
+        <IconSymbol
+          size={310}
+          color="#808080"
+          name="chevron.left.forwardslash.chevron.right"
+          style={styles.headerImage}
+        />
+      }>
       <View style={styles.content}>
         <View style={styles.card}>
           <Ionicons name="person-circle-outline" size={48} color="#007AFF" style={styles.cardIcon} />
@@ -42,10 +29,10 @@ export default function HomeScreen() {
             Your Profile
           </ThemedText>
           <ThemedText type="default" style={styles.cardDescription}>
-            Username: {user?.userName}
+            Username: 
           </ThemedText>
           <ThemedText type="default" style={styles.cardDescription}>
-            User ID: {user?.id}
+            User ID: 
           </ThemedText>
         </View>
 
@@ -76,11 +63,21 @@ export default function HomeScreen() {
           </ThemedText>
         </View>
       </View>
-    </ThemedView>
+    </ParallaxScrollView>
   );
 }
 
 const styles = StyleSheet.create({
+  headerImage: {
+    color: '#808080',
+    bottom: -90,
+    left: -35,
+    position: 'absolute',
+  },
+  titleContainer: {
+    flexDirection: 'row',
+    gap: 8,
+  },
   container: {
     flex: 1,
     padding: 20,
