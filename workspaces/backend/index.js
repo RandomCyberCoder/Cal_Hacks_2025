@@ -36,8 +36,6 @@ app.post("/make-call", async (req, res) => {
       token,
     });
 
-    console.log;
-
     const call = await vapi.calls.create({
       assistantId,
       phoneNumberId,
@@ -46,7 +44,6 @@ app.post("/make-call", async (req, res) => {
       },
     });
 
-    
     console.log("Call response:", call);
     res.json({
       success: true,
