@@ -11,9 +11,7 @@ const makeTestCall = async () => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        // phoneNumber: "+15127689863", // Replace with you
-        // r test phone number
-        // assistantId: "58790545-e1a7-4e3d-94bc-b39baafd12fe",
+        phoneNumber: "+19167087169", // Valid E.164 format phone number
       }),
     });
 
