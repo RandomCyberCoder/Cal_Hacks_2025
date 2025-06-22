@@ -1,110 +1,306 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
-
-import { Collapsible } from '@/components/Collapsible';
-import { ExternalLink } from '@/components/ExternalLink';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
+import React, { useState, useEffect } from 'react';
+import {
+  View,
+  StyleSheet,
+  FlatList,
+  Text,
+  Alert,
+  SafeAreaView,
+  ActivityIndicator,
+  TouchableOpacity,
+} from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
-import { IconSymbol } from '@/components/ui/IconSymbol';
+import { Ionicons } from '@expo/vector-icons';
+import { logsAPI } from '@/services/api';
 
-export default function TabTwoScreen() {
+interface LogEntry {
+  _id: string;
+  timestamp: string;
+  Note: string;
+  location: {
+    type: string;
+    coordinates: [number, number]; // [longitude, latitude]
+  };
+}
+
+export default function LogsScreen() {
+  const [logs, setLogs] = useState<LogEntry[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadLogs();
+  }, []);
+
+  const loadLogs = async () => {
+    try {
+      setLoading(true);
+      const response = await logsAPI.getLogs();
+      if (response.success) {
+        // Sort by timestamp (newest first)
+        const sortedLogs = response.events.sort((a: LogEntry, b: LogEntry) => 
+          new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+        );
+        setLogs(sortedLogs);
+      } else {
+        Alert.alert('Error', 'Failed to load logs');
+      }
+    } catch (error) {
+      console.error('Load logs error:', error);
+      Alert.alert('Error', 'Failed to load logs');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const formatTimestamp = (timestamp: string) => {
+    const date = new Date(timestamp);
+    return {
+      date: date.toLocaleDateString(),
+      time: date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    };
+  };
+
+  const formatLocation = (coordinates: [number, number]) => {
+    const [longitude, latitude] = coordinates;
+    return {
+      latitude: latitude.toFixed(6),
+      longitude: longitude.toFixed(6)
+    };
+  };
+
+  const openMaps = (coordinates: [number, number]) => {
+    const [longitude, latitude] = coordinates;
+    const url = `https://maps.google.com/?q=${latitude},${longitude}`;
+    // You can implement map opening logic here
+    Alert.alert('Location', `Lat: ${latitude.toFixed(6)}, Lng: ${longitude.toFixed(6)}`);
+  };
+
+  const renderLogEntry = ({ item }: { item: LogEntry }) => {
+    const { date, time } = formatTimestamp(item.timestamp);
+    const { latitude, longitude } = formatLocation(item.location.coordinates);
+
+    return (
+      <View style={styles.logCard}>
+        <View style={styles.logHeader}>
+          <View style={styles.timestampContainer}>
+            <Ionicons name="time-outline" size={16} color="#8b6f47" />
+            <Text style={styles.dateText}>{date}</Text>
+            <Text style={styles.timeText}>{time}</Text>
+          </View>
+          <TouchableOpacity 
+            style={styles.locationButton}
+            onPress={() => openMaps(item.location.coordinates)}
+          >
+            <Ionicons name="location-outline" size={16} color="#8b6f47" />
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.transcriptContainer}>
+          <Text style={styles.transcriptLabel}>Transcript:</Text>
+          <Text style={styles.transcriptText}>
+            {item.Note || 'No transcript available'}
+          </Text>
+        </View>
+
+        <View style={styles.locationContainer}>
+          <Text style={styles.locationLabel}>Location:</Text>
+          <Text style={styles.locationCoordinates}>
+            📍 {latitude}, {longitude}
+          </Text>
+        </View>
+      </View>
+    );
+  };
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#D0D0D0', dark: '#353636' }}
-      headerImage={
-        <IconSymbol
-          size={310}
-          color="#808080"
-          name="description"
-          style={styles.headerImage}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Explore</ThemedText>
-      </ThemedView>
-      <ThemedText>This app includes example code to help you get started.</ThemedText>
-      <Collapsible title="File-based routing">
-        <ThemedText>
-          This app has two screens:{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/explore.tsx</ThemedText>
+    <SafeAreaView style={styles.container}>
+      <View style={styles.header}>
+        <ThemedText type="title" style={styles.headerTitle}>
+          Event Logs
         </ThemedText>
-        <ThemedText>
-          The layout file in <ThemedText type="defaultSemiBold">app/(tabs)/_layout.tsx</ThemedText>{' '}
-          sets up the tab navigator.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/router/introduction">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Android, iOS, and web support">
-        <ThemedText>
-          You can open this project on Android, iOS, and the web. To open the web version, press{' '}
-          <ThemedText type="defaultSemiBold">w</ThemedText> in the terminal running this project.
-        </ThemedText>
-      </Collapsible>
-      <Collapsible title="Images">
-        <ThemedText>
-          For static images, you can use the <ThemedText type="defaultSemiBold">@2x</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">@3x</ThemedText> suffixes to provide files for
-          different screen densities
-        </ThemedText>
-        <Image source={require('@/assets/images/react-logo.png')} style={{ alignSelf: 'center' }} />
-        <ExternalLink href="https://reactnative.dev/docs/images">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Custom fonts">
-        <ThemedText>
-          Open <ThemedText type="defaultSemiBold">app/_layout.tsx</ThemedText> to see how to load{' '}
-          <ThemedText style={{ fontFamily: 'SpaceMono' }}>
-            custom fonts such as this one.
-          </ThemedText>
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/versions/latest/sdk/font">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Light and dark mode components">
-        <ThemedText>
-          This template has light and dark mode support. The{' '}
-          <ThemedText type="defaultSemiBold">useColorScheme()</ThemedText> hook lets you inspect
-          what the user&apos;s current color scheme is, and so you can adjust UI colors accordingly.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/develop/user-interface/color-themes/">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Animations">
-        <ThemedText>
-          This template includes an example of an animated component. The{' '}
-          <ThemedText type="defaultSemiBold">components/HelloWave.tsx</ThemedText> component uses
-          the powerful <ThemedText type="defaultSemiBold">react-native-reanimated</ThemedText>{' '}
-          library to create a waving hand animation.
-        </ThemedText>
-        {Platform.select({
-          ios: (
-            <ThemedText>
-              The <ThemedText type="defaultSemiBold">components/ParallaxScrollView.tsx</ThemedText>{' '}
-              component provides a parallax effect for the header image.
-            </ThemedText>
-          ),
-        })}
-      </Collapsible>
-    </ParallaxScrollView>
+        <TouchableOpacity style={styles.refreshButton} onPress={loadLogs}>
+          <Ionicons name="refresh" size={24} color="#8b6f47" />
+        </TouchableOpacity>
+      </View>
+
+      <Text style={styles.logCount}>
+        {logs.length} log{logs.length !== 1 ? 's' : ''} found
+      </Text>
+
+      <View style={styles.content}>
+        {loading ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color="#8b6f47" />
+            <Text style={styles.loadingText}>Loading logs...</Text>
+          </View>
+        ) : logs.length === 0 ? (
+          <View style={styles.emptyState}>
+            <Text style={styles.emptyIcon}>📝</Text>
+            <Text style={styles.emptyTitle}>No logs yet</Text>
+            <Text style={styles.emptySubtitle}>Event logs will appear here when available</Text>
+          </View>
+        ) : (
+          <FlatList
+            data={logs}
+            renderItem={renderLogEntry}
+            keyExtractor={(item) => item._id}
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={styles.listContainer}
+          />
+        )}
+      </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  headerImage: {
-    color: '#A2A2A2',
-    bottom: -90,
-    left: -35,
-    position: 'absolute',
+  container: {
+    flex: 1,
+    backgroundColor: '#f5f5dc',
   },
-  titleContainer: {
+  header: {
     flexDirection: 'row',
-    gap: 8,
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: '#f5f5dc',
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    paddingBottom: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e6dcc6',
+  },
+  headerTitle: {
+    fontSize: 32,
+    fontWeight: 'bold',
+    color: '#8b6f47',
+  },
+  refreshButton: {
+    padding: 8,
+  },
+  logCount: {
+    fontSize: 16,
+    color: '#a0845c',
+    fontWeight: '500',
+    textAlign: 'center',
+    paddingVertical: 12,
+  },
+  content: {
+    flex: 1,
+    paddingHorizontal: 20,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingBottom: 100,
+  },
+  loadingText: {
+    marginTop: 16,
+    fontSize: 16,
+    color: '#8b6f47',
+    fontWeight: '500',
+  },
+  emptyState: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingBottom: 100,
+  },
+  emptyIcon: {
+    fontSize: 64,
+    marginBottom: 20,
+  },
+  emptyTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#8b6f47',
+    marginBottom: 8,
+  },
+  emptySubtitle: {
+    fontSize: 16,
+    color: '#a0845c',
+    textAlign: 'center',
+  },
+  listContainer: {
+    paddingBottom: 20,
+  },
+  logCard: {
+    backgroundColor: 'white',
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 16,
+    shadowColor: '#8b6f47',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+    borderWidth: 1,
+    borderColor: '#e6dcc6',
+  },
+  logHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 16,
+  },
+  timestampContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  dateText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#8b6f47',
+    marginLeft: 8,
+    marginRight: 12,
+  },
+  timeText: {
+    fontSize: 14,
+    color: '#a0845c',
+  },
+  locationButton: {
+    padding: 4,
+    backgroundColor: '#f9f7f1',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#e6dcc6',
+  },
+  transcriptContainer: {
+    marginBottom: 16,
+  },
+  transcriptLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#8b6f47',
+    marginBottom: 8,
+  },
+  transcriptText: {
+    fontSize: 16,
+    color: '#333',
+    lineHeight: 22,
+    backgroundColor: '#f9f7f1',
+    padding: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#e6dcc6',
+  },
+  locationContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  locationLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#8b6f47',
+  },
+  locationCoordinates: {
+    fontSize: 14,
+    color: '#a0845c',
+    fontFamily: 'monospace',
   },
 });

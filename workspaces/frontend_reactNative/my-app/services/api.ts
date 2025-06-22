@@ -77,4 +77,16 @@ export const vapiAPI = {
   },
 };
 
+export const logsAPI = {
+  getLogs: async () => {
+    const response = await api.get('/logs');
+    return response.data;
+  },
+  
+  addLog: async (log: { timestamp: string; Note: string; location: { coordinates: [number, number] } }) => {
+    const response = await api.post('/logs/new', log);
+    return response.data;
+  },
+};
+
 export default api; 

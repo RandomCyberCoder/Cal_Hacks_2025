@@ -5,7 +5,7 @@ import { VapiClient } from "@vapi-ai/server-sdk";
 import User from "./models/user.js";
 import { authRouter, authenticateToken } from './routes/auth.js';
 import { contactsRouter } from './routes/contacts.js';
-import {logRouter} from './routes/log.js'
+import { logRouter } from './routes/log.js';
 
 dotenv.config();
 
