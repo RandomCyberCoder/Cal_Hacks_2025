@@ -154,6 +154,15 @@ export default function ContactsScreen() {
             <Text style={styles.emptyIcon}>📱</Text>
             <Text style={styles.emptyTitle}>No contacts yet</Text>
             <Text style={styles.emptySubtitle}>Add your first contact to get started!</Text>
+            
+            {/* Add contact button in empty state */}
+            <TouchableOpacity
+              style={styles.emptyStateButton}
+              onPress={() => setShowAddModal(true)}
+            >
+              <Ionicons name="add-circle" size={24} color="white" />
+              <Text style={styles.emptyStateButtonText}>Add Your First Contact</Text>
+            </TouchableOpacity>
           </View>
         ) : (
           <FlatList
@@ -166,13 +175,16 @@ export default function ContactsScreen() {
         )}
       </View>
 
-      <TouchableOpacity
-        style={styles.addButton}
-        onPress={() => setShowAddModal(true)}
-      >
-        <Ionicons name="add" size={28} color="#8b6f47" />
-        <Text style={styles.addButtonText}>Add Contact</Text>
-      </TouchableOpacity>
+      {/* Floating Add Button - only show when there are contacts */}
+      {contacts.length > 0 && (
+        <TouchableOpacity
+          style={styles.addButton}
+          onPress={() => setShowAddModal(true)}
+        >
+          <Ionicons name="add" size={28} color="white" />
+          <Text style={styles.addButtonText}>Add Contact</Text>
+        </TouchableOpacity>
+      )}
 
       <Modal
         visible={showAddModal}
@@ -315,9 +327,33 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#a0845c',
     textAlign: 'center',
+    marginBottom: 30,
+  },
+  emptyStateButton: {
+    backgroundColor: '#8b6f47',
+    borderRadius: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+    shadowColor: '#8b6f47',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  emptyStateButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginLeft: 8,
   },
   listContainer: {
-    paddingBottom: 100,
+    paddingBottom: 120, // Extra space for floating button
   },
   contactCard: {
     marginBottom: 15,
@@ -376,29 +412,28 @@ const styles = StyleSheet.create({
   },
   addButton: {
     position: 'absolute',
-    bottom: 30,
+    bottom: 100,
     left: 20,
     right: 20,
-    backgroundColor: 'white',
+    backgroundColor: '#8b6f47',
     borderRadius: 20,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 18,
     paddingHorizontal: 30,
-    shadowColor: '#8b6f47',
+    shadowColor: '#000',
     shadowOffset: {
       width: 0,
-      height: 2,
+      height: 6,
     },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 4,
-    borderWidth: 2,
-    borderColor: '#e6dcc6',
+    shadowOpacity: 0.3,
+    shadowRadius: 10,
+    elevation: 10,
+    zIndex: 1000,
   },
   addButtonText: {
-    color: '#8b6f47',
+    color: 'white',
     fontSize: 18,
     fontWeight: 'bold',
     marginLeft: 10,
