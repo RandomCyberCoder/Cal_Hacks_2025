@@ -36,65 +36,14 @@ export default function HomeScreen() {
   const [loading, setLoading] = useState(true);
   const [showContactModal, setShowContactModal] = useState(false);
   const [userLocation, setUserLocation] = useState<{latitude: number; longitude: number; address?: string} | null>(null);
-  const [callId, setCallId] = useState(null);
-  const [isPolling, setIsPolling] = useState(false);
-  const [callData, setCallData] = useState(null);
+  const [currentCallId, setCurrentCallId] = useState<string | null>(null);
 
   const VAPI_API_KEY = process.env.EXPO_PUBLIC_VAPI_API_KEY;
 
   useEffect(() => {
     loadDashboardData();
     getCurrentLocation();
-    if (!callId || !isPolling) return;
-
-    console.log(`🔄 Starting polling for call ${callId}`);
-    
-    const pollForCall = async () => {
-      try {
-        const statusResponse = await fetch(`https://api.vapi.ai/call/${callId}`, {
-          headers: {
-            "Authorization": `Bearer ${VAPI_API_KEY}`,
-            "Content-Type": "application/json",
-          },
-        });
-
-        const data = await statusResponse.json();
-        console.log(`📞 Call Status:`, data.status);
-        
-        if (data.status === 'ended' || data.status === 'completed') {
-          console.log('✅ Call completed!');
-          setCallData(data);
-          setIsPolling(false);
-          console.log(data.analysis?.summary)
-          Alert.alert(
-            'Call Completed', 
-            `Call finished!\n\nSummary: ${data.analysis?.summary.notes || 'No summary available'}`
-          );
-          return;
-        }
-        
-        if (data.status === 'failed' || data.status === 'error') {
-          console.log('❌ Call failed!');
-          setIsPolling(false);
-          Alert.alert('Call Failed', 'The call was not completed successfully.');
-          return;
-        }
-        
-      } catch (error) {
-        console.error('❌ Error polling:', error);
-      }
-    };
-
-    // Poll immediately, then set up interval
-    pollForCall();
-    const interval = setInterval(pollForCall, 10000); // 10 seconds
-
-    // Cleanup function
-    return () => {
-      console.log('🛑 Cleaning up polling interval');
-      clearInterval(interval);
-    };
-  }, [callId, isPolling]); // Dependencies 
+  }, []); 
 
   const getCurrentLocation = async () => {
     try {
@@ -107,10 +56,10 @@ export default function HomeScreen() {
           longitude: location.longitude,
           address: address?.formattedAddress
         });
-        console.log('Location obtained:', location, address?.formattedAddress);
+        console.log('Location obtained:', JSON.stringify({location, address: address?.formattedAddress}, null, 2));
       }
     } catch (error) {
-      console.error('Location error:', error);
+      console.error('Location error:', JSON.stringify(error, null, 2));
     }
   };
 
@@ -130,7 +79,7 @@ export default function HomeScreen() {
         setContactsCount(contactsResponse.contacts.length);
       }
     } catch (error) {
-      console.error('Dashboard data error:', error);
+      console.error('Dashboard data error:', JSON.stringify(error, null, 2));
     } finally {
       setLoading(false);
     }
@@ -199,31 +148,135 @@ export default function HomeScreen() {
             );
             
             if (response.success) {
-              console.log("📞 Call Response:", response);
-              const callId = response.callId;
+              console.log("📞 Call Response:", JSON.stringify(response, null, 2));
+              
+              // Store the call ID for later summary fetching
+              setCurrentCallId(response.callId);
+              
               Alert.alert(
-                'Success', 
-                `Call initiated successfully!\nCall ID: ${response.callId}\nAssistant Type: ${response.assistantType}${currentLocation ? `\nLocation: ${currentLocation.address || 'Coordinates shared'}` : ''}`
+                'Call Started', 
+                `Call initiated successfully!\nCall ID: ${response.callId}\nAssistant Type: ${response.assistantType}${currentLocation ? `\nLocation: ${currentLocation.address || 'Coordinates shared'}` : ''}`,
+                [
+                  { 
+                    text: 'Call Completed', 
+                    onPress: async () => {
+                      console.log('🔍 Fetching call summary...');
+                      console.log('🔑 VAPI_API_KEY:', VAPI_API_KEY ? 'Present' : 'MISSING!');
+                      
+                      if (!VAPI_API_KEY) {
+                        Alert.alert('Error', 'VAPI API key is missing. Please add EXPO_PUBLIC_VAPI_API_KEY to your .env file');
+                        return;
+                      }
+                      
+                      try {
+                        // Fetch the actual call summary from VAPI
+                        const callResponse = await fetch(`https://api.vapi.ai/call/${response.callId}`, {
+                          headers: {
+                            "Authorization": `Bearer ${VAPI_API_KEY}`,
+                            "Content-Type": "application/json",
+                          },
+                        });
+                        
+                        if (callResponse.ok) {
+                          const callData = await callResponse.json();
+                          console.log('📞 Call Data:', JSON.stringify(callData, null, 2));
+                          
+                                                    // Extract summary/transcript
+                          console.log('🔍 Raw VAPI Response Structure:');
+                          console.log('📊 callData.analysis:', JSON.stringify(callData.analysis.summary, null, 2));
+                          console.log('📝 callData.transcript:', JSON.stringify(callData.transcript, null, 2));
+                          console.log('📋 callData.summary:', JSON.stringify(callData.summary, null, 2));
+                          
+                          const summary = callData.analysis?.summary?.notes || 
+                                        JSON.stringify(callData.analysis?.summary) || 
+                                        callData.transcript || 
+                                        callData.summary ||
+                                        `${callTypeDisplay} call completed`;
+                          
+                          console.log('✅ EXTRACTED SUMMARY:', JSON.stringify(summary, null, 2));
+                          console.log('📏 Summary length:', summary.length);
+                          console.log('🎯 Summary type:', typeof summary);
+                          
+                          // Create log entry with actual call summary
+                          const logEntry = {
+                            timestamp: new Date().toISOString(),
+                            Note: summary,
+                            location: {
+                              coordinates: (currentLocation ? 
+                                [currentLocation.longitude, currentLocation.latitude] : 
+                                [-122.4194, 37.7749]) as [number, number]
+                            }
+                          };
+                          
+                          console.log('💾 SAVING TO MONGODB:', JSON.stringify(logEntry, null, 2));
+                          
+                          await logsAPI.addLog(logEntry);
+                          console.log('✅ Log entry successfully saved to MongoDB!');
+                          
+                          // Show summary to user
+                          Alert.alert(
+                            'Call Summary Saved',
+                            `Summary: ${summary.substring(0, 100)}${summary.length > 100 ? '...' : ''}`
+                          );
+                          
+                        } else {
+                          console.error('Failed to fetch call data:', callResponse.status);
+                                                     // Fallback: create basic log entry
+                          await logsAPI.addLog({
+                            timestamp: new Date().toISOString(),
+                            Note: `${callTypeDisplay} call completed`,
+                            location: {
+                              coordinates: (currentLocation ? 
+                                [currentLocation.longitude, currentLocation.latitude] : 
+                                [-122.4194, 37.7749]) as [number, number]
+                            }
+                          });
+                          
+                          Alert.alert('Call Completed', 'Call summary will be available shortly.');
+                        }
+                        
+                        loadDashboardData(); // Refresh to show new log
+                        
+                      } catch (error) {
+                        console.error('Failed to fetch call summary:', JSON.stringify(error, null, 2));
+                        
+                                                 // Fallback: create basic log entry
+                        try {
+                          await logsAPI.addLog({
+                            timestamp: new Date().toISOString(),
+                            Note: `${callTypeDisplay} call completed`,
+                            location: {
+                              coordinates: (currentLocation ? 
+                                [currentLocation.longitude, currentLocation.latitude] : 
+                                [-122.4194, 37.7749]) as [number, number]
+                            }
+                          });
+                          loadDashboardData();
+                          Alert.alert('Call Completed', 'Basic log entry created.');
+                        } catch (logError) {
+                          console.error('Failed to add fallback log entry:', JSON.stringify(logError, null, 2));
+                          Alert.alert('Error', 'Failed to save call log.');
+                        }
+                      }
+                    }
+                  }
+                ]
               );
-
-              // This will trigger the useEffect to start polling
-              setCallId(response.callId);
-              setIsPolling(true);
             } else {
               Alert.alert('Error', response.error || 'Failed to make call');
             }
           } catch (error: any) {
-            console.error('Call error:', error);
+            console.error('Call error:', JSON.stringify(error, null, 2));
             
             // Better error logging
             let errorMessage = 'Failed to make call. Please try again.';
             if (error.response) {
               // Server responded with error status
-              console.error('Response error:', error.response.status, error.response.data);
+              console.error('Response error:', error.response.status, JSON.stringify(error.response.data, null, 2));
               errorMessage = `Server error (${error.response.status}): ${error.response.data?.error || error.response.data?.message || 'Unknown error'}`;
             } else if (error.request) {
               // Request made but no response
-              console.error('Network error:', error.request);
+              console.error('Network error:', JSON.stringify(error.request, null, 2));
               errorMessage = 'Network error: Could not connect to server. Check if backend is running.';
             } else {
               // Something else
