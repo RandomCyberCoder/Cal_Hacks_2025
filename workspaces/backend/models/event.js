@@ -17,9 +17,9 @@ const timeSeriesEntrySchema = new mongoose.Schema({
 //   additionalField1: String,
 });
 
-const eventEntrySchema = new mongoose.Schema({
-    timestamp: { type: Date, default: (new Date()).toISOString()}, 
-    timeSeries: [timeSeriesEntrySchema]
-})
+// const eventEntrySchema = new mongoose.Schema({
+//     timestamp: { type: Date, default: (new Date()).toISOString()}, 
+//     timeSeries: [timeSeriesEntrySchema]
+// })
 
-export default eventEntrySchema;
+export default timeSeriesEntrySchema;

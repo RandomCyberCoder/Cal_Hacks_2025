@@ -5,6 +5,7 @@ import { VapiClient } from "@vapi-ai/server-sdk";
 import User from "./models/user.js";
 import { authRouter, authenticateToken } from './routes/auth.js';
 import { contactsRouter } from './routes/contacts.js';
+import {logRouter} from './routes/log.js'
 
 dotenv.config();
 
@@ -43,6 +44,7 @@ mongoose.connect(process.env.MONGODB_URL)
 
 app.use('/auth', authRouter);
 app.use('/contacts', contactsRouter);
+app.use('/logs', logRouter);
 
 app.get('/protected', authenticateToken, (req, res) => {
   res.json({ 
