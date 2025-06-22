@@ -4,28 +4,36 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js",
+    "dev": "nodemon index.js",
+    "test_call": "nodemon test_call.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "@vapi-ai/server-sdk": "^0.9.1",
-    "axios": "^1.10.0",
-    "body-parser": "^2.2.0",
-    "dotenv": "^16.5.0",
-    "express": "^5.1.0",
-    "mongoose": "^8.16.0",
-    "expo": "^50.0.0",
-    "react-native": "^0.73.6",
-    "@vapi-ai/react-native": "^0.1.7",
     "@config-plugins/react-native-webrtc": "8.0.0",
     "@daily-co/config-plugin-rn-daily-js": "0.0.4",
     "@daily-co/react-native-daily-js": "0.59.0",
     "@daily-co/react-native-webrtc": "118.0.3-daily.1",
     "@react-native-async-storage/async-storage": "^1.22.3",
+    "@vapi-ai/react-native": "^0.1.7",
+    "@vapi-ai/server-sdk": "^0.9.1",
+    "body-parser": "^2.2.0",
+    "expo": "^50.0.0",
+    "mongoose": "^8.16.0",
+    "react-native": "^0.73.6",
     "react-native-background-timer": "^2.4.1",
     "react-native-get-random-values": "^1.11.0"
+  },
+  "devDependencies": {
+    "axios": "^1.10.0",
+    "dotenv": "^16.5.0",
+    "express": "^5.1.0",
+    "install": "^0.13.0",
+    "nodemon": "^3.1.10",
+    "npm": "^11.4.2"
   }
 }

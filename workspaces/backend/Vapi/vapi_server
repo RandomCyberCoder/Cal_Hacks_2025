@@ -1,6 +1,7 @@
 import { VapiClient } from "@vapi-ai/server-sdk";
 require("dotenv").config();
 
+console.log("hi", process.env.VAPI_API_KEY);
 const vapi = new VapiClient({ token: process.env.VAPI_API_KEY });
 
 vapi.calls
