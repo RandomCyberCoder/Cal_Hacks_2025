@@ -25,6 +25,7 @@
     "expo-image": "~2.3.0",
     "expo-linear-gradient": "~13.0.2",
     "expo-linking": "~7.1.5",
+    "expo-location": "~18.1.5",
     "expo-router": "~5.1.0",
     "expo-secure-store": "~13.0.2",
     "expo-splash-screen": "~0.30.9",

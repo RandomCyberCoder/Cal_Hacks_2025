@@ -12,6 +12,7 @@ import {
 import { ThemedText } from '@/components/ThemedText';
 import { Ionicons } from '@expo/vector-icons';
 import { logsAPI } from '@/services/api';
+import { locationService, AddressComponents } from '@/services/locationService';
 
 interface LogEntry {
   _id: string;
@@ -21,11 +22,13 @@ interface LogEntry {
     type: string;
     coordinates: [number, number]; // [longitude, latitude]
   };
+  address?: AddressComponents; // Added for geocoded address
 }
 
 export default function LogsScreen() {
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [loading, setLoading] = useState(true);
+  const [gettingLocation, setGettingLocation] = useState(false);
 
   useEffect(() => {
     loadLogs();
@@ -40,7 +43,17 @@ export default function LogsScreen() {
         const sortedLogs = response.events.sort((a: LogEntry, b: LogEntry) => 
           new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
         );
-        setLogs(sortedLogs);
+        
+        // Load addresses for each log entry
+        const logsWithAddresses = await Promise.all(
+          sortedLogs.map(async (log: LogEntry) => {
+            const [longitude, latitude] = log.location.coordinates;
+            const address = await locationService.reverseGeocode(latitude, longitude);
+            return { ...log, address };
+          })
+        );
+        
+        setLogs(logsWithAddresses);
       } else {
         Alert.alert('Error', 'Failed to load logs');
       }
@@ -75,6 +88,60 @@ export default function LogsScreen() {
     Alert.alert('Location', `Lat: ${latitude.toFixed(6)}, Lng: ${longitude.toFixed(6)}`);
   };
 
+  const getCurrentLocation = async () => {
+    try {
+      setGettingLocation(true);
+      const location = await locationService.getCurrentLocation();
+      
+      if (location) {
+        const address = await locationService.reverseGeocode(location.latitude, location.longitude);
+        const addressText = address?.formattedAddress || 
+          `${location.latitude.toFixed(6)}, ${location.longitude.toFixed(6)}`;
+        
+        Alert.alert(
+          'Current Location',
+          `📍 ${addressText}`,
+          [
+            { text: 'OK', style: 'default' },
+            { 
+              text: 'Add as Log', 
+              style: 'default',
+              onPress: () => addCurrentLocationLog(location, address)
+            }
+          ]
+        );
+      } else {
+        Alert.alert('Error', 'Could not get current location');
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Failed to get location');
+    } finally {
+      setGettingLocation(false);
+    }
+  };
+
+  const addCurrentLocationLog = async (location: { latitude: number; longitude: number }, address: AddressComponents | null) => {
+    try {
+      const newLog = {
+        timestamp: new Date().toISOString(),
+        Note: `Current location: ${address?.formattedAddress || 'Unknown address'}`,
+        location: {
+          coordinates: [location.longitude, location.latitude] as [number, number]
+        }
+      };
+
+      const response = await logsAPI.addLog(newLog);
+      if (response.success) {
+        Alert.alert('Success', 'Location added to logs!');
+        loadLogs(); // Refresh logs
+      } else {
+        Alert.alert('Error', 'Failed to add location to logs');
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Failed to add location to logs');
+    }
+  };
+
   const renderLogEntry = ({ item }: { item: LogEntry }) => {
     const { date, time } = formatTimestamp(item.timestamp);
     const { latitude, longitude } = formatLocation(item.location.coordinates);
@@ -103,10 +170,23 @@ export default function LogsScreen() {
         </View>
 
         <View style={styles.locationContainer}>
-          <Text style={styles.locationLabel}>Location:</Text>
-          <Text style={styles.locationCoordinates}>
-            📍 {latitude}, {longitude}
-          </Text>
+          <View style={styles.locationInfo}>
+            <Text style={styles.locationLabel}>Location:</Text>
+            {item.address?.formattedAddress ? (
+              <View>
+                <Text style={styles.addressText}>
+                  📍 {item.address.formattedAddress}
+                </Text>
+                <Text style={styles.coordinatesText}>
+                  {latitude}, {longitude}
+                </Text>
+              </View>
+            ) : (
+              <Text style={styles.locationCoordinates}>
+                📍 {latitude}, {longitude}
+              </Text>
+            )}
+          </View>
         </View>
       </View>
     );
@@ -118,9 +198,22 @@ export default function LogsScreen() {
         <ThemedText type="title" style={styles.headerTitle}>
           Event Logs
         </ThemedText>
-        <TouchableOpacity style={styles.refreshButton} onPress={loadLogs}>
-          <Ionicons name="refresh" size={24} color="#8b6f47" />
-        </TouchableOpacity>
+        <View style={styles.headerButtons}>
+          <TouchableOpacity 
+            style={styles.locationButton} 
+            onPress={getCurrentLocation}
+            disabled={gettingLocation}
+          >
+            {gettingLocation ? (
+              <ActivityIndicator size="small" color="#8b6f47" />
+            ) : (
+              <Ionicons name="location" size={24} color="#8b6f47" />
+            )}
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.refreshButton} onPress={loadLogs}>
+            <Ionicons name="refresh" size={24} color="#8b6f47" />
+          </TouchableOpacity>
+        </View>
       </View>
 
       <Text style={styles.logCount}>
@@ -174,8 +267,13 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#8b6f47',
   },
+  headerButtons: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
   refreshButton: {
     padding: 8,
+    marginLeft: 8,
   },
   logCount: {
     fontSize: 16,
@@ -290,13 +388,28 @@ const styles = StyleSheet.create({
   },
   locationContainer: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     justifyContent: 'space-between',
+  },
+  locationInfo: {
+    flex: 1,
   },
   locationLabel: {
     fontSize: 14,
     fontWeight: '600',
     color: '#8b6f47',
+    marginBottom: 8,
+  },
+  addressText: {
+    fontSize: 14,
+    color: '#333',
+    lineHeight: 20,
+    marginBottom: 4,
+  },
+  coordinatesText: {
+    fontSize: 12,
+    color: '#a0845c',
+    fontFamily: 'monospace',
   },
   locationCoordinates: {
     fontSize: 14,

@@ -11,7 +11,7 @@ const makeTestCall = async () => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        phoneNumber: "+19167087169", // Valid E.164 format phone number
+        phoneNumber: "+13052408589", // Valid E.164 format phone number
       }),
     });
 

@@ -24,13 +24,13 @@ export default function HomeScreen() {
   const handleMakeCall = async () => {
     Alert.alert(
       'Make Emergency Call',
-      'Are you sure you want to make a call to +19167087169?',
+      'Are you sure you want to make a call to +13052408589?',
       [
         { text: 'Cancel', style: 'cancel' },
         { text: 'Call Now', style: 'default', onPress: async () => {
           try {
             setIsCallLoading(true);
-            const response = await vapiAPI.makeCall('+19167087169'); // Using the correct 916 number
+            const response = await vapiAPI.makeCall('+13052408589'); // Updated phone number
             
             if (response.success) {
               Alert.alert('Success', `Call initiated successfully!\nCall ID: ${response.callId}`);
@@ -77,7 +77,7 @@ export default function HomeScreen() {
             <>
               <Ionicons name="call" size={48} color="white" style={styles.callIcon} />
               <Text style={styles.emergencyButtonText}>Emergency Call</Text>
-              <Text style={styles.emergencySubtext}>+1 (916) 708-7169</Text>
+              <Text style={styles.emergencySubtext}>+1 (305) 240-8589</Text>
             </>
           )}
         </TouchableOpacity>
