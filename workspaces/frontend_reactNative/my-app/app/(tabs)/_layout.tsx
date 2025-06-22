@@ -30,12 +30,12 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Home',
+          title: 'Dashboard',
           tabBarIcon: ({ color }) => <MaterialCommunityIcons name="tablet-dashboard" size={24} color={color} />,
         }}
       />
       <Tabs.Screen
-        name="explore"
+        name="contacts"
         options={{
           title: 'Contacts',
           tabBarIcon: ({ color }) => <MaterialIcons name="contact-emergency" size={24} color={color} />,
