@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 import dotenv from "dotenv";
 import { VapiClient } from "@vapi-ai/server-sdk";
 import User from "./models/user.js";
+import { authRouter, authenticateToken } from './routes/auth.js';
 
 dotenv.config();
 
@@ -25,6 +26,19 @@ console.log("Phone Number ID:", phoneNumberId);
 
 // Middleware
 app.use(express.json());
+
+mongoose.connect(process.env.MONGODB_URL)
+.then(() => console.log('Connected to MongoDB'))
+.catch(err => console.error('MongoDB connection error:', err));
+
+app.use('/auth', authRouter);
+
+app.get('/protected', authenticateToken, (req, res) => {
+  res.json({ 
+    message: 'This is a protected route', 
+    user: req.user 
+  });
+});
 
 // Basic server setup
 app.get("/", (req, res) => {
@@ -98,6 +112,15 @@ app.post("/webhook", (req, res) => {
       error: error.message,
     });
   }
+});
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({ 
+    success: false, 
+    message: 'Something went wrong!' 
+  });
 });
 
 app.listen(port, () => {
