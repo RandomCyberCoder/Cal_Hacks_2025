@@ -220,7 +220,7 @@ export default function HomeScreen() {
                           );
                           
                         } else {
-                          console.error('Failed to fetch call data:', callResponse.status);
+                         // console.error('Failed to fetch call data:', callResponse.status);
                                                      // Fallback: create basic log entry
                           await logsAPI.addLog({
                             timestamp: new Date().toISOString(),
@@ -238,7 +238,7 @@ export default function HomeScreen() {
                         loadDashboardData(); // Refresh to show new log
                         
                       } catch (error) {
-                        console.error('Failed to fetch call summary:', JSON.stringify(error, null, 2));
+                       // console.error('Failed to fetch call summary:', JSON.stringify(error, null, 2));
                         
                                                  // Fallback: create basic log entry
                         try {
@@ -254,8 +254,8 @@ export default function HomeScreen() {
                           loadDashboardData();
                           Alert.alert('Call Completed', 'Basic log entry created.');
                         } catch (logError) {
-                          console.error('Failed to add fallback log entry:', JSON.stringify(logError, null, 2));
-                          Alert.alert('Error', 'Failed to save call log.');
+                         //console.error('Failed to add fallback log entry:', JSON.stringify(logError, null, 2));
+                         // Alert.alert('Error', 'Failed to save call log.');
                         }
                       }
                     }
