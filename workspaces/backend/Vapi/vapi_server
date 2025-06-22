@@ -9,7 +9,7 @@ vapi.calls
     assistantId: "6f62f7f1-7df6-4d57-bc30-4fafbf97506c", // 🔥 Use assistant from dashboard
     phoneNumberId: process.env.VAPI_PHONE_ID,
     customer: {
-      number: "+19164324898",
+      number: "+9167087169",
     },
   })
   .then((res) => console.log("✅ Call started:", res.id))

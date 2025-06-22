@@ -70,4 +70,11 @@ export const contactsAPI = {
   },
 };
 
+export const vapiAPI = {
+  makeCall: async (phoneNumber?: string) => {
+    const response = await api.post('/make-call', { phoneNumber });
+    return response.data;
+  },
+};
+
 export default api; 

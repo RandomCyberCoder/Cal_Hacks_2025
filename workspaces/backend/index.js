@@ -57,7 +57,7 @@ app.get("/", (req, res) => {
 });
 
 // Test endpoint to make a call
-app.post("/make-call", async (req, res) => {
+app.post("/make-call", authenticateToken, async (req, res) => {
   try {
     const { phoneNumber } = req.body;
 
