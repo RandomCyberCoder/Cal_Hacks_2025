@@ -5,10 +5,10 @@ const vapi = new VapiClient({ token: process.env.VAPI_API_KEY });
 
 vapi.calls
   .create({
-    assistantId: "d0558431-1807-44fb-93f9-9878f4a9907d", // 🔥 Use assistant from dashboard
+    assistantId: "58790545-e1a7-4e3d-94bc-b39baafd12fe", // 🔥 Use assistant from dashboard
     phoneNumberId: process.env.VAPI_PHONE_ID,
     customer: {
-      number: "+15555555555",
+      number: "+15127689863",
     },
   })
   .then((res) => console.log("✅ Call started:", res.id))
