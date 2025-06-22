@@ -36,11 +36,65 @@ export default function HomeScreen() {
   const [loading, setLoading] = useState(true);
   const [showContactModal, setShowContactModal] = useState(false);
   const [userLocation, setUserLocation] = useState<{latitude: number; longitude: number; address?: string} | null>(null);
+  const [callId, setCallId] = useState(null);
+  const [isPolling, setIsPolling] = useState(false);
+  const [callData, setCallData] = useState(null);
+
+  const VAPI_API_KEY = process.env.EXPO_PUBLIC_VAPI_API_KEY;
 
   useEffect(() => {
     loadDashboardData();
     getCurrentLocation();
-  }, []);
+    if (!callId || !isPolling) return;
+
+    console.log(`🔄 Starting polling for call ${callId}`);
+    
+    const pollForCall = async () => {
+      try {
+        const statusResponse = await fetch(`https://api.vapi.ai/call/${callId}`, {
+          headers: {
+            "Authorization": `Bearer ${VAPI_API_KEY}`,
+            "Content-Type": "application/json",
+          },
+        });
+
+        const data = await statusResponse.json();
+        console.log(`📞 Call Status:`, data.status);
+        
+        if (data.status === 'ended' || data.status === 'completed') {
+          console.log('✅ Call completed!');
+          setCallData(data);
+          setIsPolling(false);
+          console.log(data.analysis?.summary)
+          Alert.alert(
+            'Call Completed', 
+            `Call finished!\n\nSummary: ${data.analysis?.summary.notes || 'No summary available'}`
+          );
+          return;
+        }
+        
+        if (data.status === 'failed' || data.status === 'error') {
+          console.log('❌ Call failed!');
+          setIsPolling(false);
+          Alert.alert('Call Failed', 'The call was not completed successfully.');
+          return;
+        }
+        
+      } catch (error) {
+        console.error('❌ Error polling:', error);
+      }
+    };
+
+    // Poll immediately, then set up interval
+    pollForCall();
+    const interval = setInterval(pollForCall, 10000); // 10 seconds
+
+    // Cleanup function
+    return () => {
+      console.log('🛑 Cleaning up polling interval');
+      clearInterval(interval);
+    };
+  }, [callId, isPolling]); // Dependencies 
 
   const getCurrentLocation = async () => {
     try {
@@ -145,10 +199,16 @@ export default function HomeScreen() {
             );
             
             if (response.success) {
+              console.log("📞 Call Response:", response);
+              const callId = response.callId;
               Alert.alert(
                 'Success', 
                 `Call initiated successfully!\nCall ID: ${response.callId}\nAssistant Type: ${response.assistantType}${currentLocation ? `\nLocation: ${currentLocation.address || 'Coordinates shared'}` : ''}`
               );
+
+              // This will trigger the useEffect to start polling
+              setCallId(response.callId);
+              setIsPolling(true);
             } else {
               Alert.alert('Error', response.error || 'Failed to make call');
             }
