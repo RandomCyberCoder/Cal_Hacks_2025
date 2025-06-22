@@ -25,6 +25,19 @@ console.log("phoneNumberId", phoneNumberId);
 // Middleware
 app.use(express.json());
 
+// CORS configuration for React Native app
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+  
+  if (req.method === 'OPTIONS') {
+    res.sendStatus(200);
+  } else {
+    next();
+  }
+});
+
 mongoose.connect(process.env.MONGODB_URL)
 .then(() => console.log('Connected to MongoDB'))
 .catch(err => console.error('MongoDB connection error:', err));
@@ -84,7 +97,8 @@ app.use((err, req, res, next) => {
   });
 });
 
-app.listen(port, () => {
+app.listen(port, '0.0.0.0', () => {
   console.log(`🚀 Vapi Backend Server is running on http://localhost:${port}`);
+  console.log(`🚀 Also accessible at http://10.40.54.244:${port}`);
   console.log(`📞 Make calls via POST to http://localhost:${port}/make-call`);
 });
