@@ -131,7 +131,7 @@ export default function ContactsScreen() {
       </View>
     </TouchableOpacity>
   );
-
+  
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
@@ -209,7 +209,7 @@ export default function ContactsScreen() {
                   </TouchableOpacity>
                 ))}
               </View>
-            </View>
+        </View>
 
             <View style={styles.inputGroup}>
               <Text style={styles.fieldLabel}>Name *</Text>
@@ -220,7 +220,7 @@ export default function ContactsScreen() {
                 placeholder="Enter contact name"
                 placeholderTextColor="#999"
               />
-            </View>
+        </View>
 
             <View style={styles.inputGroup}>
               <Text style={styles.fieldLabel}>Phone Number *</Text>
@@ -232,7 +232,7 @@ export default function ContactsScreen() {
                 placeholderTextColor="#999"
                 keyboardType="phone-pad"
               />
-            </View>
+        </View>
 
             <View style={styles.inputGroup}>
               <Text style={styles.fieldLabel}>Email (Optional)</Text>
@@ -245,8 +245,8 @@ export default function ContactsScreen() {
                 keyboardType="email-address"
                 autoCapitalize="none"
               />
-            </View>
-          </View>
+        </View>
+      </View>
         </SafeAreaView>
       </Modal>
     </SafeAreaView>
